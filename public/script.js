@@ -49,7 +49,9 @@ canvas.addEventListener("click", function (evt) {
     const y = (base.y /cameraZoom) + screen.y -cameraOffset.y- (screen.y/cameraZoom);;
     const [r, g, b, a] = canvas.maskCanvas.getContext("2d").getImageData(x, y, 1, 1).data; 
     currentColor = a === 0 ? null : {r, g, b, a};
+    drawOverlay();
 }, false);
+
 
 
 function draw() {
@@ -57,24 +59,20 @@ function draw() {
     canvas.height = window.innerHeight
 
     ctx.translate( window.innerWidth / 2, window.innerHeight / 2 )
-    ctx.scale(cameraZoom, cameraZoom)
+    ctx.scale(cameraZoom, cameraZoom);
     ctx.translate( -window.innerWidth / 2 + cameraOffset.x, -window.innerHeight / 2 + cameraOffset.y )
     ctx.clearRect(0,0, window.innerWidth, window.innerHeight)
     if(imageLoaded) {
         ctx.drawImage(canvas.offscreenCanvas, 0, 0);
-        drawOverlay();   
+        ctx.drawImage(canvas.o, 0, 0);
     }
-    requestAnimationFrame( draw )
+    requestAnimationFrame(draw);
 }
 
 
 function drawOverlay() {
-
-    document.getElementById("v").innerHTML = `rgba(${currentColor?.r}, ${currentColor?.g}, ${currentColor?.b}, ${currentColor?.a})`;
     if(currentColor === null) { return; }
-
-    const mctx = canvas.maskCanvas.getContext("2d");
-    var imageData = mctx.getImageData(0, 0, canvas.maskCanvas.width, canvas.maskCanvas.height);
+    var imageData = canvas.maskCanvas.getContext("2d").getImageData(0, 0, canvas.maskCanvas.width, canvas.maskCanvas.height);
     var data = imageData.data;
     for (var i = 0; i < data.length; i += 4) {
         if(data[i] === currentColor.r && data[i+1] === currentColor.g && data[i+2] === currentColor.b && data[i+3] === currentColor.a ) {
@@ -87,7 +85,6 @@ function drawOverlay() {
         }
     }
     canvas.o.getContext("2d").putImageData(imageData, 0, 0); 
-    ctx.drawImage(canvas.o, 0, 0);
 }
 
 
