@@ -1,0 +1,22 @@
+{
+  "name": "chouettes-foules-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "dev": "esbuild script.js  --bundle --sourcemap --outfile=public/script.js --watch --servedir=public --define:global=window"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adibou/chouettes-foules-app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adibou/chouettes-foules-app/issues"
+  },
+  "homepage": "https://github.com/adibou/chouettes-foules-app#readme",
+  "devDependencies": {
+    "esbuild": "^0.17.19"
+  }
+}

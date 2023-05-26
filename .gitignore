@@ -1,0 +1,8 @@
+node_modules/
+env.ts
+public/bundle.*
+dist/
+
+.DS_Store
+.AppleDouble
+.LSOverride

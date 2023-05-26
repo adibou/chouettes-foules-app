@@ -2,8 +2,9 @@
 const canvas = document.getElementById("canvas");
 const ctx    = canvas.getContext("2d");
 const image  = document.getElementById("source");
+const mask  = document.getElementById("mask");
 
-let cameraOffset = { x: window.innerWidth/2, y: window.innerHeight/2 }
+let cameraOffset = { x: 0, y: 0 }
 let cameraZoom = 1
 let MAX_ZOOM = 2
 let MIN_ZOOM = 0.5
@@ -15,7 +16,6 @@ let isDragging = false
 let dragStart = { x: 0, y: 0 }
 
 window.addEventListener("DOMContentLoaded", (e) => {   
-
     draw();
  });
 
@@ -24,9 +24,32 @@ window.addEventListener("DOMContentLoaded", (e) => {
     canvas.offscreenCanvas = document.createElement("canvas");
     canvas.offscreenCanvas.width = image.width;
     canvas.offscreenCanvas.height = image.height;
-    canvas.offscreenCanvas.getContext("2d").drawImage(image, 0, 0);  
+    canvas.offscreenCanvas.getContext("2d").drawImage(image, 0, 0); 
+
+    canvas.maskCanvas = document.createElement("canvas");
+    canvas.maskCanvas.width = mask.width;
+    canvas.maskCanvas.height = mask.height;
+    canvas.maskCanvas.getContext("2d").drawImage(mask, 0, 0);
+
+    canvas.o = document.createElement("canvas");
+    canvas.o.width = mask.width;
+    canvas.o.height = mask.height;
     imageLoaded = true; 
 });
+
+let currentColor = null;
+let activeColor = {r: 0, g: 125, b: 0, a: 125};
+
+
+canvas.addEventListener("click", function (evt) {
+    var rect = canvas.getBoundingClientRect();
+    const base    = { x: evt.clientX - rect.left, y: evt.clientY - rect.top};
+    const screen  = {x : window.innerWidth / 2, y : window.innerHeight / 2};
+    const x = (base.x /cameraZoom) + screen.x -cameraOffset.x - (screen.x/cameraZoom);
+    const y = (base.y /cameraZoom) + screen.y -cameraOffset.y- (screen.y/cameraZoom);;
+    const [r, g, b, a] = canvas.maskCanvas.getContext("2d").getImageData(x, y, 1, 1).data; 
+    currentColor = a === 0 ? null : {r, g, b, a};
+}, false);
 
 
 function draw() {
@@ -38,12 +61,47 @@ function draw() {
     ctx.translate( -window.innerWidth / 2 + cameraOffset.x, -window.innerHeight / 2 + cameraOffset.y )
     ctx.clearRect(0,0, window.innerWidth, window.innerHeight)
     if(imageLoaded) {
-        ctx.drawImage(canvas.offscreenCanvas, -window.innerWidth, -window.innerHeight);
+        ctx.drawImage(canvas.offscreenCanvas, 0, 0);
+        drawOverlay();   
     }
-
     requestAnimationFrame( draw )
 }
 
+
+function drawOverlay() {
+
+    document.getElementById("v").innerHTML = `rgba(${currentColor?.r}, ${currentColor?.g}, ${currentColor?.b}, ${currentColor?.a})`;
+    if(currentColor === null) { return; }
+
+    const mctx = canvas.maskCanvas.getContext("2d");
+    var imageData = mctx.getImageData(0, 0, canvas.maskCanvas.width, canvas.maskCanvas.height);
+    var data = imageData.data;
+    for (var i = 0; i < data.length; i += 4) {
+        if(data[i] === currentColor.r && data[i+1] === currentColor.g && data[i+2] === currentColor.b && data[i+3] === currentColor.a ) {
+            data[i] = activeColor.r;
+            data[i+1] = activeColor.g;
+            data[i+2] = activeColor.b;
+            data[i+3] = activeColor.a;
+        } else {
+            data[i+3] = 0;
+        }
+    }
+    canvas.o.getContext("2d").putImageData(imageData, 0, 0); 
+    ctx.drawImage(canvas.o, 0, 0);
+}
+
+
+
+
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    const base    = { x: evt.clientX - rect.left, y: evt.clientY - rect.top};
+    console.log(ctx.getImageData(base.x, base.y, 1, 1).data);
+    const screen  = {x : window.innerWidth / 2, y : window.innerHeight / 2};
+    const x = (base.x /cameraZoom) + screen.x -cameraOffset.x - (screen.x/cameraZoom);
+    const y = (base.y /cameraZoom) + screen.y -cameraOffset.y- (screen.y/cameraZoom);;
+    return { x ,y };
+}
 
 function getEventLocation(e)
 {
@@ -123,14 +181,11 @@ function adjustZoom(zoomAmount, zoomFactor)
         }
         else if (zoomFactor)
         {
-            console.log(zoomFactor)
             cameraZoom = zoomFactor*lastZoom
         }
         
         cameraZoom = Math.min( cameraZoom, MAX_ZOOM )
         cameraZoom = Math.max( cameraZoom, MIN_ZOOM )
-        
-        console.log(zoomAmount)
     }
 }
 
