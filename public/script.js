@@ -65,7 +65,7 @@ function draw() {
     ctx.clearRect(0,0, window.innerWidth, window.innerHeight)
     if(imageLoaded) {
         ctx.drawImage(canvas.offscreenCanvas, 0, 0);
-        ctx.drawImage(canvas.o, 0, 0);
+        if(currentColor !== null) { ctx.drawImage(canvas.o, 0, 0); }
     }
     requestAnimationFrame(draw);
 }
