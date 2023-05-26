@@ -5,9 +5,9 @@ const image  = document.getElementById("source");
 const mask  = document.getElementById("mask");
 
 let cameraOffset = { x: 0, y: 0 }
-let cameraZoom = 1
+let cameraZoom = 0.5
 let MAX_ZOOM = 2
-let MIN_ZOOM = 0.5
+let MIN_ZOOM = 0.2
 let SCROLL_SENSITIVITY = 0.0002
 let imageLoaded = false;
 let initialPinchDistance = null
@@ -25,6 +25,7 @@ window.addEventListener("DOMContentLoaded", (e) => {
     canvas.offscreenCanvas.width = image.width;
     canvas.offscreenCanvas.height = image.height;
     canvas.offscreenCanvas.getContext("2d").drawImage(image, 0, 0); 
+    cameraOffset ={ x: -image.width*lastZoom/2 , y: -image.height*lastZoom/2}
 
     canvas.maskCanvas = document.createElement("canvas");
     canvas.maskCanvas.width = mask.width;
