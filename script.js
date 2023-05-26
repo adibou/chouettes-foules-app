@@ -5,9 +5,9 @@ const image  = document.getElementById("source");
 
 let cameraOffset = { x: window.innerWidth/2, y: window.innerHeight/2 }
 let cameraZoom = 1
-let MAX_ZOOM = 5
-let MIN_ZOOM = 0.1
-let SCROLL_SENSITIVITY = 0.0005
+let MAX_ZOOM = 2
+let MIN_ZOOM = 0.5
+let SCROLL_SENSITIVITY = 0.0002
 let imageLoaded = false;
 let initialPinchDistance = null
 let lastZoom = cameraZoom;
@@ -15,11 +15,18 @@ let isDragging = false
 let dragStart = { x: 0, y: 0 }
 
 window.addEventListener("DOMContentLoaded", (e) => {   
+
     draw();
  });
 
 
- image.addEventListener("load", (e) => { imageLoaded = true; });
+ image.addEventListener("load", (e) => { 
+    canvas.offscreenCanvas = document.createElement("canvas");
+    canvas.offscreenCanvas.width = image.width;
+    canvas.offscreenCanvas.height = image.height;
+    canvas.offscreenCanvas.getContext("2d").drawImage(image, 0, 0);  
+    imageLoaded = true; 
+});
 
 
 function draw() {
@@ -31,7 +38,7 @@ function draw() {
     ctx.translate( -window.innerWidth / 2 + cameraOffset.x, -window.innerHeight / 2 + cameraOffset.y )
     ctx.clearRect(0,0, window.innerWidth, window.innerHeight)
     if(imageLoaded) {
-        ctx.drawImage(image, -window.innerWidth, -window.innerHeight);
+        ctx.drawImage(canvas.offscreenCanvas, -window.innerWidth, -window.innerHeight);
     }
 
     requestAnimationFrame( draw )
